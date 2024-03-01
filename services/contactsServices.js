@@ -1,15 +1,10 @@
 import { promises as fsPromises } from 'fs';
-
-
-
 import path from 'path';
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
 
 const contactsPath = path.join(__dirname, 'contacts.json');
-
-
 
 async function listContacts() {
   try {
@@ -60,4 +55,21 @@ async function addContact(name, email, phone) {
   }
 }
 
-export { listContacts, getContactById, removeContact, addContact };
+async function updateContact(contactId, newData) {
+  try {
+    const data = await fsPromises.readFile(contactsPath, 'utf-8');
+    const contacts = JSON.parse(data);
+    const index = contacts.findIndex(contact => contact.id === contactId);
+    if (index === -1) {
+      throw new Error('Contact not found');
+    }
+    const updatedContact = { ...contacts[index], ...newData };
+    contacts[index] = updatedContact;
+    await fsPromises.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    return updatedContact;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { listContacts, getContactById, removeContact, addContact, updateContact };
