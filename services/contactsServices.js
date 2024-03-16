@@ -1,59 +1,14 @@
 import Contact from "../models/contactModel.js";
 
-const listContacts = async () => {
-  try {
-    return await Contact.find();
-  } catch (error) {
-    throw error;
-  }
-};
+export const listContacts = () => Contact.find();
 
-const getContactById = async (contactId) => {
-  try {
-    return await Contact.findById(contactId);
-  } catch (error) {
-    throw error;
-  }
-};
+export const getContactById = (contactId) => Contact.findById(contactId);
 
-const removeContact = async (contactId) => {
-  try {
-    return await Contact.findByIdAndDelete(contactId);
-  } catch (error) {
-    throw error;
-  }
-};
+export const removeContact = (contactId) => Contact.findByIdAndDelete(contactId);
 
-const addContact = async (data) => {
-  try {
-    return await Contact.create(data);
-  } catch (error) {
-    throw error;
-  }
-};
+export const addContact = (data) => Contact.create(data);
 
-const updateContact = async (contactId, newData) => {
-  try {
-    return await Contact.findByIdAndUpdate(contactId, newData, { new: true });
-  } catch (error) {
-    throw error;
-  }
-};
+export const updateContact = (contactId, newData) => Contact.findByIdAndUpdate(contactId, newData, { new: true });
 
-const updateFavoriteStatus = async (contactId, favorite) => {
-  try {
-    return await Contact.findByIdAndUpdate(contactId, { favorite }, { new: true });
-  } catch (error) {
-    throw error;
-  }
-};
-
-export default {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
-  updateFavoriteStatus,
-};
+export const updateFavoriteStatus = (contactId, favorite) => Contact.findByIdAndUpdate(contactId, { favorite }, { new: true });
 
