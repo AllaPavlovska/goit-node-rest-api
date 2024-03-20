@@ -1,9 +1,6 @@
 import { contactsService } from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
-import {
-  createContactSchema,
-  updateContactSchema,
-} from "../schemas/contactsSchemas.js";
+import { createContactSchema, updateContactSchema } from "../schemas/contactsSchemas.js";
 
 export const getAllContacts = async (req, res, next) => {
   const { _id: owner } = req.user;
@@ -50,10 +47,6 @@ export const updateContact = async (req, res, next) => {
       throw HttpError(400, error.message);
     }
 
-    if (Object.keys(req.body).length === 0) {
-      throw HttpError(400, "Body must have at least one field");
-    }
-
     const { id } = req.params;
     const result = await contactsService.updateContactId(id, req.body);
     if (!result) {
@@ -70,11 +63,9 @@ export const updateStatusContact = async (req, res, next) => {
     const { id } = req.params;
     const { favorite } = req.body;
 
-    if (typeof favorite !== "boolean") {
-      throw HttpError(
-        400,
-        "Invalid value for 'favorite'. It should be a boolean."
-      );
+    const { error } = Joi.boolean().validate(favorite);
+    if (error) {
+      throw HttpError(400, "Invalid value for 'favorite'. It should be a boolean.");
     }
 
     const updatedContact = await contactsService.updateFavoriteStatusContact(
