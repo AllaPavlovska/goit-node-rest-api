@@ -33,3 +33,4 @@ contactsRouter.patch(
   contactsControllers.updateStatusContact
 );
 
+export default contactsRouter;
