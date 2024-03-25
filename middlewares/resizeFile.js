@@ -8,8 +8,8 @@ const resizeFile = async (req, _, next) => {
   Jimp.read(pathAvatar)
     .then((file) => {
       return file
-        .contain(250, 250) // resize
-        .write(pathAvatar); // save
+        .contain(250, 250) 
+        .write(pathAvatar); 
     })
     .then((resizedFile) => {
       if (!resizedFile) next(HttpError(400, err.message));
