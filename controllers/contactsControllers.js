@@ -1,75 +1,83 @@
-import * as contactsService from "../services/contactsServices.js";
+import contactsService from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
-import { createContactSchema, updateContactSchema } from "../schemas/contactsSchemas.js"; 
+import controllerWrapper from "../helpers/ctrlWrapper.js";
 
-export const getAllContacts = async (req, res) => {
-  try {
-    const contacts = await contactsService.listContacts();
-    res.status(200).json(contacts);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+const getAllContacts = async (req, res) => {
+  const filter = {};
+  const { _id } = req.user;
+  const { favorite, page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  filter.owner = _id;
+
+  if (favorite) filter.favorite = favorite;
+
+  const contacts = await contactsService.listContacts(filter, { skip, limit });
+  res.status(200).json(contacts);
 };
 
-export const getOneContact = async (req, res) => {
+const getOneContact = async (req, res) => {
   const { id } = req.params;
-  try {
-    const contact = await contactsService.getContactById(id);
-    if (contact) {
-      res.status(200).json(contact);
-    } else {
-      res.status(404).json({ message: "Not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const { _id: owner } = req.user;
+  const contact = await contactsService.getOneContact({ _id: id, owner });
+
+  if (!contact) throw HttpError(404);
+
+  res.status(200).json(contact);
 };
 
-export const deleteContact = async (req, res) => {
+const deleteContact = async (req, res) => {
   const { id } = req.params;
-  try {
-    const deletedContact = await contactsService.removeContact(id);
-    if (deletedContact) {
-      res.status(200).json(deletedContact);
-    } else {
-      res.status(404).json({ message: "Not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const { _id: owner } = req.user;
+  const contact = await contactsService.removeContact({ _id: id, owner });
+
+  if (!contact) throw HttpError(404);
+
+  res.status(200).json(contact);
 };
 
-export const createContact = async (req, res) => {
-  const { name, email, phone } = req.body;
-  try {
-    const validationResult = createContactSchema.validate({ name, email, phone });
-    if (validationResult.error) {
-      throw new HttpError(400, validationResult.error.message);
-    }
+const createContact = async (req, res) => {
+  const { _id: owner } = req.user;
 
-    const newContact = await contactsService.addContact(name, email, phone);
-    res.status(201).json(newContact);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+  const contact = await contactsService.addContact({
+    ...req.body,
+    owner,
+  });
+
+  res.status(201).json(contact);
 };
 
-export const updateContact = async (req, res) => {
+const updateContact = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone } = req.body;
-  try {
-    const validationResult = updateContactSchema.validate({ name, email, phone });
-    if (validationResult.error) {
-      throw new HttpError(400, validationResult.error.message);
-    }
+  const { _id: owner } = req.user;
+  const contact = await contactsService.updateContactById(
+    { _id: id, owner },
+    req.body
+  );
 
-    const updatedContact = await contactsService.updateContact(id, { name, email, phone });
-    if (updatedContact) {
-      res.status(200).json(updatedContact);
-    } else {
-      res.status(404).json({ message: "Not found" });
-    }
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+  if (!contact) throw HttpError(404);
+
+  res.status(200).json(contact);
+};
+
+const updateStatusContact = async (req, res) => {
+  const { id } = req.params;
+  const { _id: owner } = req.user;
+  const contact = await contactsService.updateStatusContactById(
+    { _id: id, owner },
+    req.body
+  );
+
+  if (!contact) throw HttpError(404);
+
+  res.status(200).json(contact);
+};
+
+export default {
+  getAllContacts: controllerWrapper(getAllContacts),
+  getOneContact: controllerWrapper(getOneContact),
+  deleteContact: controllerWrapper(deleteContact),
+  createContact: controllerWrapper(createContact),
+  updateContact: controllerWrapper(updateContact),
+  updateStatusContact: controllerWrapper(updateStatusContact),
 };
